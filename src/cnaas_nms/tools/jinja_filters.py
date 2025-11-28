@@ -3,9 +3,11 @@
 import base64
 import hashlib
 import ipaddress
+import logging
 import re
 from typing import Any, Callable, Optional
 
+from jinja2.exceptions import TemplateError
 from netutils.config.parser import (
     BaseSpaceConfigParser,
     EOSConfigParser,
@@ -14,6 +16,8 @@ from netutils.config.parser import (
     JunosConfigParser,
     NXOSConfigParser,
 )
+
+from cnaas_nms.tools.log import get_logger
 
 # This global dict can be used to update the Jinja environment filters dict to include all
 # registered template filter function
@@ -262,4 +266,27 @@ def get_config_section(config: str, section: str, parser: str) -> str:
         collect = "\n".join(children)
         return collect + "\n}" if isinstance(config_parser, JunosConfigParser) else collect
 
+    return ""
+
+
+@template_filter()
+def fail(msg: str) -> None:
+    """
+    Raises TemplateError in templates.
+
+    Usage: {{ "some exception" | fail }}
+    """
+    raise TemplateError(msg)
+
+
+@template_filter()
+def log(msg: str, level: str = "INFO") -> str:
+    """
+    Log a message in templates.
+
+    Usage: {{ "some log" | log("INFO") }}
+    """
+    logger = get_logger()
+    lvl: int = getattr(logging, str(level).upper(), logging.INFO)
+    logger.log(lvl, msg, extra={"source": "template"})
     return ""
