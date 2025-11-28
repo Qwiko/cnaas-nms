@@ -1,16 +1,21 @@
 import ipaddress
 import unittest
 
+from jinja2 import Environment
+from jinja2.exceptions import TemplateError
+
 from cnaas_nms.tools.jinja_filters import (
     b16decode,
     b16encode,
     b64decode,
     b64encode,
+    fail,
     get_interface,
     increment_ip,
     ipv4_to_ipv6,
     ipwrap,
     isofy_ipv4,
+    log,
     md5,
     sha1,
     sha256,
@@ -184,6 +189,67 @@ class DecodeHashTests(unittest.TestCase):
         ssh_key = "AAAAB3NzaC1yc2EAAAADAQABAAABAQC/SIee+JR7J87Uty3a6Uv/sdXFq9lMuJ5zCQ1nI94VVMwmDJIfRuvdOOUTwnqxCkrOXyDsNur7rXSzHw8NBeRrPAlk8e7qIIhDhZWYRQWyGW27s7sl0wehJ0e57PeeE9NdZ2O4pRGtuuom5y/N7ed0Ll/z/EDgOqYJpD5r39yoc02efWn+G81Ahl8twi+uS+3Y/hXLvkT9AB0XKPYt8DI2yAygt+3E+BWL53a+UICLP6pUvnwY9TUXqk3S27gD/gJZ/DSC8WtBfrHVuYk3QMA4kASKqu1Bt/FGYegsD7qv16hum4if+8bPioTccd1V7Qx3jtQ3s6pW8AWVxnpWydzl"
         ssh_key_md5 = "79ed70709499afede0f6b865bd641b68"
         self.assertEqual(ssh_key_md5, md5(b64decode(ssh_key, encoding="latin-1"), encoding="latin-1"))
+
+
+class FailTests(unittest.TestCase):
+    def test_fail_exception(self):
+        with self.assertRaises(TemplateError) as cm:
+            fail("this raises TemplateError")
+        cm.msg == "this raises TemplateError"
+
+    def test_fail_in_jinja(self):
+        env = Environment()
+        env.filters["fail"] = fail
+
+        template = env.from_string('{{ "some exception" | fail }}')
+
+        with self.assertRaises(TemplateError) as cm:
+            template.render()
+        cm.msg == "some exception"
+
+
+class LogTests(unittest.TestCase):
+    def test_log_filter(self):
+        with self.assertLogs("cnaas-nms", "INFO") as cm:
+            log("this is a info-log")
+            log("this is also a info-log", "info")
+        assert len(cm.records) == 2
+        assert cm.records[0].msg == "this is a info-log"
+        assert cm.records[0].levelname == "INFO"
+
+        with self.assertLogs("cnaas-nms", "WARNING") as cm:
+            log("this is a warning-log", "WARNING")
+        assert len(cm.records) == 1
+        assert cm.records[0].msg == "this is a warning-log"
+        assert cm.records[0].levelname == "WARNING"
+
+        with self.assertLogs("cnaas-nms", "CRITICAL") as cm:
+            log("this is a critical-log", "CRITICAL")
+        assert len(cm.records) == 1
+        assert cm.records[0].msg == "this is a critical-log"
+        assert cm.records[0].levelname == "CRITICAL"
+
+        with self.assertLogs("cnaas-nms", "ERROR") as cm:
+            log("this is a error-log", "ERROR")
+        assert len(cm.records) == 1
+        assert cm.records[0].msg == "this is a error-log"
+        assert cm.records[0].levelname == "ERROR"
+
+
+def test_log_in_jinja(caplog):
+    """
+    Test logging within a jinja2 template.
+    Uses pytest so we can use caplog fixture
+    """
+    env = Environment()
+    env.filters["log"] = log
+
+    template = env.from_string('{{ "test message" | log("INFO") }}')
+
+    render = template.render()
+
+    assert "test message" in caplog.text
+    assert render == ""
 
 
 if __name__ == "__main__":
