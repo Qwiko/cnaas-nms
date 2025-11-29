@@ -235,6 +235,23 @@ class LogTests(unittest.TestCase):
         assert cm.records[0].msg == "this is a error-log"
         assert cm.records[0].levelname == "ERROR"
 
+    def test_log_incorrect_level(self):
+        """Sending an invalid level logs with error and info"""
+        with self.assertLogs("cnaas-nms", "INFO") as cm:
+            log("this turns into a info-log", "INVALID_LEVEL")
+        assert len(cm.records) == 2
+        assert cm.records[0].msg == "INVALID_LEVEL is not a valid log level, defaulting to INFO."
+        assert cm.records[0].levelname == "ERROR"
+        assert cm.records[1].msg == "this turns into a info-log"
+        assert cm.records[1].levelname == "INFO"
+
+    def test_log_module_override(self):
+        with self.assertLogs("cnaas-nms", "INFO") as cm:
+            log("this is a custom info-log", module_override="info_log")
+        # module_override is set to info_log.
+        assert cm.records[0].module_override == "info_log"
+        assert cm.records[0].levelname == "INFO"
+
 
 def test_log_in_jinja(caplog):
     """

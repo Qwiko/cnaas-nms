@@ -280,13 +280,27 @@ def fail(msg: str) -> None:
 
 
 @template_filter()
-def log(msg: str, level: str = "INFO") -> str:
+def log(msg: str, level: str = "INFO", module_override: str = "render_template") -> str:
     """
     Log a message in templates.
 
-    Usage: {{ "some log" | log("INFO") }}
+    Usage:
+        {{ "some info log" | log }}
+        {{ "some specific warning log" | log("WARNING", "dist_render") }}
+
+    Args:
+        msg: Log message.
+        level: Log level, CRITICAL, ERROR, WARNING, INFO, DEBUG.
+        module_override: Override module in log-message. Defaults to render_template.
+
+    Returns:
+        Emtpy string ""
     """
     logger = get_logger()
-    lvl: int = getattr(logging, str(level).upper(), logging.INFO)
-    logger.log(lvl, msg, extra={"source": "template"})
+    lvl: int = getattr(logging, str(level).upper(), None)
+    if not lvl or not isinstance(lvl, int):
+        logger.error(f"{level} is not a valid log level, defaulting to INFO.")
+        lvl = logging.INFO
+
+    logger.log(lvl, msg, extra={"module_override": module_override})
     return ""

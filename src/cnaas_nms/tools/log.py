@@ -8,8 +8,8 @@ from cnaas_nms.tools.event import add_event
 
 class WebsocketHandler(logging.StreamHandler):
     def emit(self, record):
-        # Override module if source is set
-        record.module = getattr(record, "source", record.module)
+        # Override module if module_override is set
+        record.module = getattr(record, "module_override", record.module)
 
         msg = self.format(record)
         add_event(msg, level=record.levelname)
@@ -17,8 +17,8 @@ class WebsocketHandler(logging.StreamHandler):
 
 class StdoutHandler(logging.StreamHandler):
     def emit(self, record):
-        # Override module if source is set
-        record.module = getattr(record, "source", record.module)
+        # Override module if module_override is set
+        record.module = getattr(record, "module_override", record.module)
 
         super().emit(record)
 
