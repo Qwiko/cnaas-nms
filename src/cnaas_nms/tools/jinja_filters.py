@@ -3,11 +3,9 @@
 import base64
 import hashlib
 import ipaddress
-import logging
 import re
 from typing import Any, Callable, Optional
 
-from jinja2.exceptions import TemplateError
 from netutils.config.parser import (
     BaseSpaceConfigParser,
     EOSConfigParser,
@@ -16,8 +14,6 @@ from netutils.config.parser import (
     JunosConfigParser,
     NXOSConfigParser,
 )
-
-from cnaas_nms.tools.log import get_logger
 
 # This global dict can be used to update the Jinja environment filters dict to include all
 # registered template filter function
