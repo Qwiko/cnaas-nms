@@ -1,21 +1,9 @@
 """Jinja filter functions for use in configuration templates"""
 
-import base64
-import hashlib
-import ipaddress
 import logging
-import re
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 from jinja2.exceptions import TemplateError
-from netutils.config.parser import (
-    BaseSpaceConfigParser,
-    EOSConfigParser,
-    IOSConfigParser,
-    IOSXRConfigParser,
-    JunosConfigParser,
-    NXOSConfigParser,
-)
 
 from cnaas_nms.tools.log import get_logger
 
@@ -67,7 +55,7 @@ def log(msg: str, level: str = "INFO", module_override: str = "render_template")
         Empty string ""
     """
     logger = get_logger()
-    lvl: int = getattr(logging, str(level).upper(), None)
+    lvl: int | None = getattr(logging, str(level).upper(), None)
     if not lvl or not isinstance(lvl, int):
         logger.error(f"{level} is not a valid log level, defaulting to INFO.")
         lvl = logging.INFO
