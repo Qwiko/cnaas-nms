@@ -11,6 +11,7 @@ apt-get update && \
     apt-get install -y \
       isc-dhcp-server \
       git \
+      python3 \
       python3-venv \
       iputils-ping \
       procps \
