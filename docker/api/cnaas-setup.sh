@@ -6,12 +6,12 @@ set -x
 export DEBIAN_FRONTEND noninteractive
 
 # Start venv
-python3.11 -m venv /opt/cnaas/venv
+python3 -m venv /opt/cnaas/venv
 cd /opt/cnaas/venv/
 source bin/activate
 
-# Upgrade pip
-/opt/cnaas/venv/bin/pip install --no-cache-dir -U pip
+# Upgrade pip, setuptools and wheel
+/opt/cnaas/venv/bin/pip install --no-cache-dir -U pip setuptools wheel
 
 # Fetch the code
 git clone $1 cnaas-nms
@@ -30,6 +30,6 @@ python3 -m pip install "cython<3.0.0" wheel && python3 -m pip install --no-build
 python3 -m pip install --no-cache-dir --group dependencies
 
 # Temp bugfix for napalm issue #2166
-cd /opt/cnaas/venv/lib/python3.11/site-packages
+cd /opt/cnaas/venv/lib/python3.13/site-packages
 git apply pull2167.patch
 git apply swaggeruirequestintercept.patch
