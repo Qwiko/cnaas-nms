@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 USER root
 
@@ -12,7 +12,6 @@ RUN apt-get update \
       git \
       iputils-ping \
       libpcre2-dev \
-      libpcre3-dev \
       libpq-dev \
       libssl-dev \
       net-tools \
@@ -58,7 +57,7 @@ RUN mkdir -p /opt/cnaas/templates /opt/cnaas/settings /opt/cnaas/venv \
 # Copy cnaas scripts
 COPY --chown=root:www-data cnaas-setup.sh createca.sh exec-pre-app.sh pytest.sh coverage.sh /opt/cnaas/
 # Temp bugfix for napalm issue #2166
-COPY --chown=www-data:www-data pull2167.patch swaggeruirequestintercept.patch /opt/cnaas/venv/lib/python3.11/site-packages/
+COPY --chown=www-data:www-data pull2167.patch swaggeruirequestintercept.patch /opt/cnaas/venv/lib/python3.13/site-packages/
 
 # Copy cnaas configuration files, used glob notation (ym?) to only copy when exist
 COPY --chown=www-data:www-data config/api.yml config/auth_config.yml config/db_config.yml config/plugins.yml config/repository.yml config/permissions.ym? /etc/cnaas-nms/
